@@ -1,7 +1,6 @@
-import io::reader;
-import io::reader_util;
 import println = io::println;
-import libc::*;
+import file_writer = io::file_writer;
+import io::*;
 import str;
 
 type tAccount = {
@@ -9,34 +8,29 @@ type tAccount = {
 	email: str,
 };
 
-fn toCStr(cstr: *libc::c_char) -> *libc::c_char {
-	ret cstr;
-}
+fn doWrite(accounts: ~[tAccount]) -> ~[tAccount] {
+	alt file_writer("accounts.dat", ~[io::create]) {
+		result::ok(file) {
 
-fn doWrite(accounts: [tAccount]) -> [tAccount] {
-	//let filename: *libc::c_char;
-	let filename: *c_char = str::as_c_str("accounts.dat", toCStr);
-	let mode: *c_char = str::as_c_str("w", toCStr);
-	io::println("I will now crash!");
-	let file = fopen(filename, mode);
-	io::println("pff as if you got this far...");
-	fclose(file);
-	io::println("closed");
+		}
+		_ { fail }
+	};
+
 	ret accounts;
 }
 
-fn doSearch(accounts: [tAccount]) -> [tAccount] {
+fn doSearch(accounts: ~[tAccount]) -> ~[tAccount] {
 	let account_size = vec::len(accounts);
 	println(uint::str(account_size));
-	vec::iter(accounts) {|account|
+	vec::iter(accounts, |account| {
 		if (str::contains(account.name, "Jo")) {
 			println("Name: " + account.name);
 		}
-	}
+	}); 
 	ret accounts;
 }
 
-fn doLogic(accounts: [tAccount]) {
+fn doLogic(accounts: ~[tAccount]) {
 	io::println("What would you like to do?");
 	io::println("1) Add Account");
 	io::println("2) Search For Account");
@@ -56,7 +50,7 @@ fn doLogic(accounts: [tAccount]) {
 			email: email
 		};
 		io::println("Name: " + account.name + " Email: " + account.email);
-		doLogic(accounts + [account]);
+		doLogic(accounts + ~[account]);
 	}
 	else if (line == "2") {
 		doLogic(doSearch(accounts));
@@ -70,9 +64,9 @@ fn doLogic(accounts: [tAccount]) {
 	
 }
 
-fn main(args: [str]) {
+fn main(args: ~[str]) {
  	io::println("hello world from '" + args[0] + "'!");
- 	let accounts: [tAccount] = [];
+ 	let accounts: ~[tAccount] = ~[];
 
  	doLogic(accounts);
 }
